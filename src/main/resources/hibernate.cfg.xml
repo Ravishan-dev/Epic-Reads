@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+  <session-factory>
+    <property name="connection.url">jdbc:mysql://localhost:3306/epic_reads_v2?useSSL=false&amp;allowPublicKeyRetrival=true</property>
+    <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <property name="connection.username">ravishan</property>
+    <property name="connection.password">R200503102785Nv</property>
+    <property name="hibernate.hbm2ddl.auto">update</property>
+    <property name="hibernate.show_sql">true</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.MariaDBDialect</property>
+
+    <mapping class="com.ravishandev.epicreads.entity.User"/>
+    <mapping class="com.ravishandev.epicreads.entity.Stock"/>
+    <mapping class="com.ravishandev.epicreads.entity.Status"/>
+    <mapping class="com.ravishandev.epicreads.entity.Seller"/>
+    <mapping class="com.ravishandev.epicreads.entity.Role"/>
+    <mapping class="com.ravishandev.epicreads.entity.City"/>
+    <mapping class="com.ravishandev.epicreads.entity.Category"/>
+    <mapping class="com.ravishandev.epicreads.entity.Book"/>
+    <mapping class="com.ravishandev.epicreads.entity.Address"/>
+  </session-factory>
+</hibernate-configuration>
