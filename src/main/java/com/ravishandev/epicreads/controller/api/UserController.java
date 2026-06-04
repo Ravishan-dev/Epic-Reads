@@ -14,6 +14,15 @@ import jakarta.ws.rs.core.Response;
 @Path("/users")
 public class UserController {
 
+    @Path("sign-up")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response signIn(String jsondata, @Context HttpServletRequest request){
+        UserDTO userDTO = AppUtil.GSON.fromJson(jsondata, UserDTO.class);
+        String responseJson = new UserService().signIn(userDTO,request);
+        return Response.ok().entity(responseJson).build();
+    }
+
     @Path("/login")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
