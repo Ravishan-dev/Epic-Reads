@@ -5,6 +5,8 @@ import com.ravishandev.epicreads.dto.UserDTO;
 import com.ravishandev.epicreads.entity.Role;
 import com.ravishandev.epicreads.entity.Status;
 import com.ravishandev.epicreads.entity.User;
+import com.ravishandev.epicreads.mail.VerificationMail;
+import com.ravishandev.epicreads.provider.MailServiceProvider;
 import com.ravishandev.epicreads.util.AppUtil;
 import com.ravishandev.epicreads.util.HibernateUtil;
 import com.ravishandev.epicreads.validation.Validator;
@@ -74,14 +76,20 @@ public class UserService {
                                 .setParameter("value", String.valueOf(Role.role.USER))
                                         .getSingleResultOrNull();
 
+                String verificationCode = AppUtil.generateCode();
+                user.setVerificationCode(verificationCode);
+
                 user.setStatus(pendingSts);
                 user.setRole(userRole);
                 Transaction transaction = hibernateSession.beginTransaction();
                 try{
                     hibernateSession.persist(user);
                     transaction.commit();
+                    VerificationMail verificationMail = new VerificationMail(user.getEmail(), user.getVerificationCode());
+                    MailServiceProvider.getInstance().sendMail(verificationMail);
                     status = true;
-                    message = "Account Created Succeccfully";
+                    message = "Account Created Success!!!"+
+                    "\n Verification Code Sent to your Verified Email Address Please Check and Verify Your Account";
                 }catch (HibernateException e){
                     transaction.rollback();
                     message = "Account Creation Failed";
