@@ -14,6 +14,15 @@ import jakarta.ws.rs.core.Response;
 @Path("/users")
 public class UserController {
 
+    @Path("verify-account")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response verifyAccount(String jsondata){
+        UserDTO userDTO = AppUtil.GSON.fromJson(jsondata, UserDTO.class);
+        String responseJson = new UserService().verifyAccount(userDTO);
+        return Response.ok().entity(responseJson).build();
+    }
+
     @Path("sign-up")
     @POST
     @Produces(MediaType.APPLICATION_JSON)

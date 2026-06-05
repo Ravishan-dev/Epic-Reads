@@ -17,7 +17,61 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import static com.ravishandev.epicreads.util.HibernateUtil.getSessionFactory;
+
 public class UserService {
+
+    public String verifyAccount(UserDTO userDTO){
+        JsonObject responseObj = new JsonObject();
+        String message = "";
+        boolean status = false;
+
+        if(userDTO.getEmail() == null){
+            message = "Cannot Find Your Email Address";
+        } else if (userDTO.getEmail().isBlank()) {
+            message = "Email Address not found";
+        } else if (userDTO.getVerificationCode() == null) {
+            message = "Verification Code is Required";
+        } else if (userDTO.getVerificationCode().isBlank()) {
+            message = "Verification Code Can Not Be Empty";
+        } else if (!userDTO.getVerificationCode().matches(Validator.VERIFICATION_CODE_VALIDATION)) {
+            message = "Please Provide a Valid Verification Code";
+        }else{
+            Session session = HibernateUtil.getSessionFactory().openSession();
+            User user = session.createQuery("FROM User u WHERE u.email=:email AND u.verificationCode=:verificationCode", User.class)
+                    .setParameter("email", userDTO.getEmail())
+                    .setParameter("verificationCode", userDTO.getVerificationCode())
+                    .getSingleResultOrNull();
+
+            if(user == null){
+                message = "Account not Found";
+            }else {
+                Status verifiedStatus = session.createNamedQuery("Status.findByValue", Status.class)
+                        .setParameter("value", String.valueOf(Status.type.VERIFIED))
+                        .getSingleResultOrNull();
+                if(user.getStatus().equals(verifiedStatus)){
+                    message = "Account Already Veryfied";
+                }else{
+                    user.setStatus(verifiedStatus);
+                    user.setVerificationCode("");
+                    Transaction transaction = session.beginTransaction();
+                    try{
+                        session.merge(user);
+                        transaction.commit();
+                        status = true;
+                        message = "Account Veryfied!";
+                    }catch (HibernateException e){
+                        transaction.rollback();
+                        message = "Something went wrong Verification Process Failed";
+                    }
+                }
+            }
+        }
+
+        responseObj.addProperty("message", message);
+        responseObj.addProperty("status", status);
+        return AppUtil.GSON.toJson(responseObj);
+    }
     
     public String signIn(UserDTO userDTO, @Context HttpServletRequest request){
         JsonObject responseObj = new JsonObject();
@@ -55,7 +109,7 @@ public class UserService {
         } else if (!userDTO.isTerms()) {
             message = "Please Accept Terms and Conditions";
         }else{
-            Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
+            Session hibernateSession = getSessionFactory().openSession();
             User singleUser = hibernateSession.createNamedQuery("User.getByEmail", User.class)
                     .setParameter("email", userDTO.getEmail())
                     .getSingleResultOrNull();
@@ -117,7 +171,7 @@ public class UserService {
         } else if (!userDTO.getPassword().matches(Validator.PASSWORD_VALIDATION)) {
             message = "Please Provide a valid Password";
         }else{
-            Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
+            Session hibernateSession = getSessionFactory().openSession();
             User singleUser = hibernateSession.createNamedQuery("User.getByEmail", User.class)
                     .setParameter("email", userDTO.getEmail())
                     .getSingleResultOrNull();
